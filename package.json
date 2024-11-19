@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "start": "npx nodemon todos.js"
+    "start": "nodemon"
   },
   "author": "",
   "license": "ISC",
