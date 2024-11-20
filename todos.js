@@ -7,7 +7,7 @@ const TodoList = require("./lib/todolist");
 const Todo = require("./lib/todo");
 const { sortTodoLists, sortTodos } = require("./lib/sort");
 const store = require("connect-loki");
-// const SeedData = require("./lib/seed-data"); //temporary 
+const SessionPersistence = require("./lib/session-persistence");
 
 const app = express();
 const host = "localhost";
@@ -37,18 +37,24 @@ app.use(session({
 app.use(flash());
 
 // Initialize req.session todoLists as a list of TodoList objects
-app.use((req, res, next) => {
-  // req.session.todoLists = SeedData; //temporary
-  let todoLists = [];
-  if ("todoLists" in req.session) {
-    req.session.todoLists.forEach(todoList => {
-      todoLists.push(TodoList.makeTodoList(todoList));
-    });
-  }
+// app.use((req, res, next) => {
+//   let todoLists = [];
+//   if ("todoLists" in req.session) {
+//     req.session.todoLists.forEach(todoList => {
+//       todoLists.push(TodoList.makeTodoList(todoList));
+//     });
+//   }
 
-  req.session.todoLists = todoLists;
-  next();
+//   req.session.todoLists = todoLists;
+//   next();
+// });
+
+//Create a new datastore
+app.use((req, res, next) => {
+  res.locals.store = new SessionPersistence(req.session);
 });
+
+
 
 // Extract session info
 app.use((req, res, next) => {
