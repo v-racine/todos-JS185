@@ -139,17 +139,6 @@ app.post("/lists",
   }
 );
 
-// TEMPORARY CODE: DELETE WHEN DONE
-app.get("/search/:todoListId/test/:todoId", (req, res) => {
-  let { todoListId, todoId } = req.params;
-  let todo = res.locals.store.loadTodo(+todoListId, +todoId);
-  if (todo) {
-    res.send(`Found todo ${todoListId}/${todoId} with title "${todo.title}"`);
-  } else {
-    res.send(`Did not find todo ${todoListId}/${todoId}`);
-  }
-});
-
 // Render individual todo list and its todos
 app.get("/lists/:todoListId", (req, res, next) => {
   let todoListId = req.params.todoListId;
@@ -169,7 +158,23 @@ app.get("/lists/:todoListId", (req, res, next) => {
 
 // Toggle completion status of a todo
 app.post("/lists/:todoListId/todos/:todoId/toggle", (req, res, next) => {
-  let { todoListId, todoId } = { ...req.params };
+  let { todoListId, todoId } = req.params;
+  let toggled = res.locals.store.toggleDoneTodo(+todoListId, +todoId);
+  
+  if (!toggled) {
+    next(new Error("Not found.")); 
+  } else {
+    let todo = res.locals.store.loadTodo(+todoListId, +todoId);
+    if (todo.done) {
+      req.flash("success", `"${todo.title}" marked done.`);
+    } else {
+      req.flash("success", `"${todo.title}" marked as NOT done!`);
+    }
+
+    res.redirect(`./lists/${todoListId}`);
+  }
+
+
   let todo = loadTodo(+todoListId, +todoId, req.session.todoLists);
   if (!todo) {
     next(new Error("Not found."));
