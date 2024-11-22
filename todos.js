@@ -116,12 +116,6 @@ app.post("/lists",
       .withMessage("The list title is required.")
       .isLength({ max: 100 })
       .withMessage("List title must be between 1 and 100 characters.")
-      .custom((title, { req }) => {
-        let todoLists = req.session.todoLists;
-        let duplicate = todoLists.find(list => list.title === title);
-        return duplicate === undefined;
-      })
-      .withMessage("List title must be unique."),
   ],
   (req, res) => {
     let errors = validationResult(req);
@@ -297,30 +291,29 @@ app.post("/lists/:todoListId/edit",
       .withMessage("The list title is required.")
       .isLength({ max: 100 })
       .withMessage("List title must be between 1 and 100 characters.")
-      .custom((title, { req }) => {
-        let todoLists = req.session.todoLists;
-        let duplicate = todoLists.find(list => list.title === title);
-        return duplicate === undefined;
-      })
-      .withMessage("List title must be unique."),
   ],
   (req, res, next) => {
     let todoListId = req.params.todoListId;
-    let todoList = loadTodoList(+todoListId, req.session.todoLists);
+    let todoList = res.locals.store.loadTodoList(+todoListId);
+
     if (!todoList) {
       next(new Error("Not found."));
     } else {
+      let todoListTitle = req.body.todoListTitle;
       let errors = validationResult(req);
       if (!errors.isEmpty()) {
         errors.array().forEach(message => req.flash("error", message.msg));
 
         res.render("edit-list", {
+          todoList,
+          todoListTitle,
           flash: req.flash(),
-          todoListTitle: req.body.todoListTitle,
-          todoList: todoList,
         });
       } else {
-        todoList.setTitle(req.body.todoListTitle);
+        if (!res.locals.store.setTodoListTitle(+todoListId, todoListTitle)) {
+          next(new Error("Not found."));
+        }
+
         req.flash("success", "Todo list updated.");
         res.redirect(`/lists/${todoListId}`);
       }
