@@ -139,6 +139,17 @@ app.post("/lists",
   }
 );
 
+// TEMPORARY CODE: DELETE WHEN DONE
+app.get("/search/:todoListId/test/:todoId", (req, res) => {
+  let { todoListId, todoId } = req.params;
+  let todo = res.locals.store.loadTodo(+todoListId, +todoId);
+  if (todo) {
+    res.send(`Found todo ${todoListId}/${todoId} with title "${todo.title}"`);
+  } else {
+    res.send(`Did not find todo ${todoListId}/${todoId}`);
+  }
+});
+
 // Render individual todo list and its todos
 app.get("/lists/:todoListId", (req, res, next) => {
   let todoListId = req.params.todoListId;
