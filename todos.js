@@ -52,8 +52,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
 // Extract session info
 app.use((req, res, next) => {
   res.locals.flash = req.session.flash;
