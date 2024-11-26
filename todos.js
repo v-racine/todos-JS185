@@ -178,32 +178,29 @@ app.post("/lists/:todoListId/todos/:todoId/toggle",
   })
 );
  
-
 // Delete a todo
-app.post("/lists/:todoListId/todos/:todoId/destroy", (req, res, next) => {
-  let { todoListId, todoId } = req.params;
+app.post("/lists/:todoListId/todos/:todoId/destroy",
+  catchError(async (req, res) => {
+    let { todoListId, todoId } = req.params;
+    let deleted = await res.locals.store.deleteTodo(+todoListId, +todoId);
+    if (!deleted) throw new Error("Not found.");
 
-  let deleted = res.locals.store.deleteTodo(+todoListId, +todoId);
-
-  if (!deleted) {
-    next(new Error("Not found."));
-  } else {
     req.flash("success", "The todo has been deleted.");
     res.redirect(`/lists/${todoListId}`);
-  }
-});
+  })
+);
 
 // Mark all todos as done
-app.post("/lists/:todoListId/complete_all", (req, res, next) => {
-  let todoListId = req.params.todoListId;
+app.post("/lists/:todoListId/complete_all",
+  catchError(async (req, res) => {
+    let todoListId = req.params.todoListId;
+    let completed = await res.locals.store.completeAllTodos(+todoListId);
+    if (!completed) throw new Error("Not found.");
 
-  if (!res.locals.store.completeAllTodos(+todoListId)) {
-    next(new Error("Not found."));
-  } else {
     req.flash("success", "All todos have been marked as done.");
     res.redirect(`/lists/${todoListId}`);
-  }
-});
+  })
+);
 
 // Create a new todo and add it to the specified list
 app.post("/lists/:todoListId/todos",
