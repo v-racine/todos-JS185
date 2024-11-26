@@ -79,7 +79,7 @@ app.get("/", (req, res) => {
 });
 
 // Render the list of todo lists
-app.get("/lists", 
+app.get("/lists",
   catchError(async (req, res) => {
     let store = res.locals.store;
     let todoLists = await store.sortedTodoLists();
