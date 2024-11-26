@@ -65,8 +65,7 @@ app.use((req, res, next) => {
 // Detect unathorized access to routes.
 const requiresAuthentication = (req, res, next) => {
   if (!res.locals.signedIn) {
-    console.log("Unauthorized.");
-    res.status(401).send("Unauthorized.");
+    res.redirect(302, "/users/signin");
   } else {
     next();
   }
@@ -79,7 +78,7 @@ app.get("/", (req, res) => {
 });
 
 // Render the list of todo lists
-app.get("/lists",
+app.get("/lists", requiresAuthentication,
   catchError(async (req, res) => {
     let store = res.locals.store;
     let todoLists = await store.sortedTodoLists();
@@ -143,7 +142,7 @@ app.post("/lists", requiresAuthentication,
 );
 
 // Render individual todo list and its todos
-app.get("/lists/:todoListId", 
+app.get("/lists/:todoListId", requiresAuthentication, 
   catchError(async (req, res) => {
     let todoListId = req.params.todoListId;
     let todoList = await res.locals.store.loadTodoList(+todoListId);
