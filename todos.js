@@ -146,17 +146,23 @@ app.post("/lists",
 );
 
 // Render individual todo list and its todos
-app.get("/lists/:todoListId", (req, res, next) => {
-  let todoListId = req.params.todoListId;
-  let todoList = res.locals.store.loadTodoList(+todoListId);
-  if (todoList === undefined) {
-    next(new Error("Not found."));
-  } else {
-    res.render("list", {
-      todoList,
-      isDoneTodoList: res.locals.store.isDoneTodoList(todoList),
-      hasUndoneTodos: res.locals.store.hasUndoneTodos(todoList),
-    });
+app.get("/lists/:todoListId", async (req, res, next) => {
+  try {
+    let todoListId = req.params.todoListId;
+    let todoList = await res.locals.store.loadTodoList(+todoListId);
+    if (todoList === undefined) {
+      next(new Error("Not found."));
+    } else {
+      todoList.todos = await res.locals.store.sortedTodos(todoList);
+
+      res.render("list", {
+        todoList,
+        isDoneTodoList: res.locals.store.isDoneTodoList(todoList),
+        hasUndoneTodos: res.locals.store.hasUndoneTodos(todoList),
+      });
+    }
+  } catch (error) {
+    next(error);
   }
 });
 
