@@ -158,17 +158,16 @@ app.get("/lists/:todoListId",
       hasUndoneTodos: res.locals.store.hasUndoneTodos(todoList),
     });
   })
-);
+)
 
 // Toggle completion status of a todo
-app.post("/lists/:todoListId/todos/:todoId/toggle", (req, res, next) => {
-  let { todoListId, todoId } = req.params;
-  let toggled = res.locals.store.toggleDoneTodo(+todoListId, +todoId);
-  
-  if (!toggled) {
-    next(new Error("Not found.")); 
-  } else {
-    let todo = res.locals.store.loadTodo(+todoListId, +todoId);
+app.post("/lists/:todoListId/todos/:todoId/toggle",
+  catchError(async (req, res) => {
+    let { todoListId, todoId } = req.params;
+    let toggled = await res.locals.store.toggleDoneTodo(+todoListId, +todoId);
+    if (!toggled) throw new Error("Not found.");
+
+    let todo = await res.locals.store.loadTodo(+todoListId, +todoId);
     if (todo.done) {
       req.flash("success", `"${todo.title}" marked done.`);
     } else {
@@ -176,25 +175,9 @@ app.post("/lists/:todoListId/todos/:todoId/toggle", (req, res, next) => {
     }
 
     res.redirect(`/lists/${todoListId}`);
-  }
-
-
-  let todo = loadTodo(+todoListId, +todoId, req.session.todoLists);
-  if (!todo) {
-    next(new Error("Not found."));
-  } else {
-    let title = todo.title;
-    if (todo.isDone()) {
-      todo.markUndone();
-      req.flash("success", `"${title}" marked as NOT done!`);
-    } else {
-      todo.markDone();
-      req.flash("success", `"${title}" marked done.`);
-    }
-
-    res.redirect(`/lists/${todoListId}`);
-  }
-});
+  })
+);
+ 
 
 // Delete a todo
 app.post("/lists/:todoListId/todos/:todoId/destroy", (req, res, next) => {
