@@ -34,19 +34,6 @@ app.use(session({
 
 app.use(flash());
 
-// Initialize req.session todoLists as a list of TodoList objects
-// app.use((req, res, next) => {
-//   let todoLists = [];
-//   if ("todoLists" in req.session) {
-//     req.session.todoLists.forEach(todoList => {
-//       todoLists.push(TodoList.makeTodoList(todoList));
-//     });
-//   }
-
-//   req.session.todoLists = todoLists;
-//   next();
-// });
-
 //Create a new datastore
 app.use((req, res, next) => {
   res.locals.store = new PgPersistence(req.session);
@@ -70,7 +57,6 @@ const requiresAuthentication = (req, res, next) => {
     next();
   }
 };
-
 
 // Redirect start page
 app.get("/", (req, res) => {
